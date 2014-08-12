@@ -11,9 +11,12 @@ mod1 <- train(y ~.,method="rf",data=training)
 mod2 <- train(y ~.,method="gbm",data=training)
 
 pred1 <- predict(mod1,testing); pred2 <- predict(mod2,testing)
-confusionMatrix(pred1, testing$y)$overall
-confusionMatrix(pred2, testing$y)$overall
-confusionMatrix(pred1, pred2)$overall
+agree <- pred1[pred1 == pred2]
+testAgree <- testing[pred1 == pred2,]
+
+confusionMatrix(pred1, testing$y)$overall[1]
+confusionMatrix(pred2, testing$y)$overall[1]
+confusionMatrix(agree, testAgree$y)$overall[1]
 
 #2
 library(caret)
@@ -40,9 +43,12 @@ confusionMatrix(pred3, testing$diagnosis)$overall[1]
 
 
 predDF <- data.frame(pred1,pred2,pred3,diagnosis=testing$diagnosis)
+sum(1*(predDF$pred3 !=predDF$pred1))
+
+
 combModFit <- train(diagnosis ~.,method="rf",data=predDF)
 combPred <- predict(combModFit,predDF)
-
+combModFit
 confusionMatrix(combPred, testing$diagnosis)$overall[1]
 
 #3
@@ -60,7 +66,7 @@ lasso.fit <- lars(as.matrix(training[,-9]), training$CompressiveStrength, type="
 
 #png(file="Plots/selection-plots-04.png", width=432, height=432, pointsize=8) 
 plot(lasso.fit, breaks=FALSE)
-legend("topleft", covnames, pch=8, lty=1:length(covnames), col=1:length(covnames))
+legend("topright", covnames, pch=8, lty=1:length(covnames), col=1:length(covnames))
 dev.off()
 
 # this plots the cross validation curve
@@ -78,10 +84,32 @@ tstest <- ts(testing$visitsTumblr)
 
 library(forecast)
 bats1 <- bats(tstrain)
-predBats1 <- forecast.bats(bats1, h = 235, level = .95)
+predBats1 <- forecast(bats1, h=c(235))
+mean(1*(tstest <= predBats1$upper[,2])*(tstest >= predBats1$lower[,2]))
+
+accuracy(predBats1$mean, tstest)
+predBats1
 predAccurate <- 1*(predBats1$lower <= tstest)
 (predBats1$upper >= tstest)
 mean(predAccurate)
-plot(predBats1$lower)
-plot(predBats1$upper)
+plot(predBats1$lower[,2])
+plot(predBats1$upper[,2])
 plot(tstest)
+
+
+#5
+set.seed(3523)
+library(AppliedPredictiveModeling)
+data(concrete)
+inTrain = createDataPartition(concrete$CompressiveStrength, p = 3/4)[[1]]
+training = concrete[ inTrain,]
+testing = concrete[-inTrain,]
+
+set.seed(325)
+svm1 <- svm(CompressiveStrength ~ ., data = training)
+predSVM <- predict(svm1, newdata = testing)
+confusionMatrix(predSVM, testing$CompressiveStrength)
+
+residSS <- sqrt(sum((predSVM - testing$CompressiveStrength)^2)/255)
+sum(resid1*resid1)/256
+?rmse
