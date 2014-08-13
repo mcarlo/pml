@@ -108,8 +108,13 @@ testing = concrete[-inTrain,]
 set.seed(325)
 svm1 <- svm(CompressiveStrength ~ ., data = training)
 predSVM <- predict(svm1, newdata = testing)
+predSVM2 <- predict(svm1, testing)
+
 confusionMatrix(predSVM, testing$CompressiveStrength)
 
-residSS <- sqrt(sum((predSVM - testing$CompressiveStrength)^2)/255)
+residSS <- sum((predSVM - testing$CompressiveStrength)^2)/255
+residSS2 <- sqrt(sum((predSVM-testing$CompressiveStrength)^2)/length(predSVM))
+residMSE <- sqrt(sum((predSVM - testing$CompressiveStrength)^2)/255)
+
 sum(resid1*resid1)/256
 ?rmse

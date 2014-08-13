@@ -13,32 +13,31 @@ allColumns <- colnames(training)
 # id columns that are not NA in testing data set
 availColumns <- cbind(colnames(training),apply(testing, 2, max))
 availColumns <- availColumns[is.na(availColumns[,2])==FALSE ,1]
-availTrain <- training[, cbind(availColumns)[-c(3, 4, 5, 6)]]
+availTrain <- training[, cbind(availColumns)[-c(1,3:6)]]
 availTest <- testing[, colnames(testing) %in% colnames(availTrain)]
 
+modGBM <- train(classe ~ ., method="gbm",data=availTrain,verbose=FALSE)
+modRF <- train(classe ~ ., method="rf",data=availTrain,verbose=FALSE,
+               type = "prob")
 
-trainRows <- nrow(availTrain)
-predictions <- 100
-testRows <- nrow(availTest)
+answers <- predict(modGBM, newdata = availTest)
+#B A B A A E D B A A B C B A E E A B B B
 
-predictionMatrix <- matrix(rep(0, 100), nrow = 20, ncol = 5)
-rm(rfApred)
+predict(modRF, newdata = availTest) # identical to GBM
+#getwd()
 
-rfApred <- matrix(rep("",testRows*5*predictions),nrow=testRows,ncol=5*predictions)
-for (i in 1:predictions){
-  endCol <- 5*i
-  beginCol <- endCol - 4
-  set.seed(i)
-  sample.split <- sample(1:trainRows,size=5000,replace=F)
-  trainSample <- availTrain[sample.split,]
-  rfA <- randomForest(as.factor(classe) ~ . , data = trainSample, ntree = 100,type="class")
-  rfApred[, beginCol:endCol] <- predict(rfA,newdata=availTest,type="class")
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    if (i < 10){
+      prefix = paste("problem_id_","0",sep="")
+      filename = paste0(prefix,i,".txt")
+    }
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
 }
-rfApred
-rfAmean <- matrix(rep(0.0, predictions), nrow = 20, ncol = 5)
-for (j in 1:5){
-  predCols <- 5*(1:predictions)-5 + j
-  rfAmean[, j] <- apply(rfApred[, predCols], 1, mean)
-}
-apply(rfApred[, predCols-4], 1, mean)
-rfAmean
+
+#pml_write_files(answers)
+ls()
+read
