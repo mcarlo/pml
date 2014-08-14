@@ -4,9 +4,10 @@ training <- read.csv("~/GitHub/pml/pml-training.csv")
 testing <- read.csv("~/GitHub/pml/pml-testing.csv")
 colnames(training)
 
-library(knitr); library(caret); library(party);library(ElemStatLearn); 
-library(MASS);library(plyr); library(gbm); library(survival); library(splines);
-library(randomForest)
+library(knitr); library(caret); library(randomForest); library(gbm);
+#library(party);library(ElemStatLearn); 
+library(MASS);library(plyr); library(survival); library(splines);
+
 
 allColumns <- colnames(training)
 
@@ -16,12 +17,15 @@ availColumns <- availColumns[is.na(availColumns[,2])==FALSE ,1]
 availTrain <- training[, cbind(availColumns)[-c(1,3:6)]]
 availTest <- testing[, colnames(testing) %in% colnames(availTrain)]
 
-modGBM <- train(classe ~ ., method="gbm",data=availTrain,verbose=FALSE)
-modRF <- train(classe ~ ., method="rf",data=availTrain,verbose=FALSE,
+# Not run for rmd file
+#modGBM <- train(classe ~ ., method="gbm",data=availTrain,verbose=FALSE)
+#modRF <- train(classe ~ ., method="rf",data=availTrain,verbose=FALSE,
                type = "prob")
 
 answers <- predict(modGBM, newdata = availTest)
 #B A B A A E D B A A B C B A E E A B B B
+modRF
+modGBM
 
 predict(modRF, newdata = availTest) # identical to GBM
 #getwd()
