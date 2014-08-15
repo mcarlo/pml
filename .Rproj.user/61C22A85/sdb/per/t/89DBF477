@@ -1,0 +1,16 @@
+{
+    "contents" : "---\ntitle       : Data slicing\nsubtitle    : \nauthor      : Jeffrey Leek\njob         : Johns Hopkins Bloomberg School of Public Health\nlogo        : bloomberg_shield.png\nframework   : io2012        # {io2012, html5slides, shower, dzslides, ...}\nhighlighter : highlight.js  # {highlight.js, prettify, highlight}\nhitheme     : tomorrow   # \nurl:\n  lib: ../../libraries\n  assets: ../../assets\nwidgets     : [mathjax]            # {mathjax, quiz, bootstrap}\nmode        : selfcontained # {standalone, draft}\n---\n\n\n```{r setup, cache = F, echo = F, message = F, warning = F, tidy = F}\n# make this an external chunk that can be included in any file\noptions(width = 100)\nopts_chunk$set(message = F, error = F, warning = F, comment = NA, fig.align = 'center', dpi = 100, tidy = F, cache.path = '.cache/', fig.path = 'fig/')\n\noptions(xtable.type = 'html')\nknit_hooks$set(inline = function(x) {\n  if(is.numeric(x)) {\n    round(x, getOption('digits'))\n  } else {\n    paste(as.character(x), collapse = ', ')\n  }\n})\nknit_hooks$set(plot = knitr:::hook_plot_html)\n```\n\n\n## SPAM Example: Data splitting\n\n```{r loadPackage}\nlibrary(caret); library(kernlab); data(spam)\ninTrain <- createDataPartition(y=spam$type,\n                              p=0.75, list=FALSE)\ntraining <- spam[inTrain,]\ntesting <- spam[-inTrain,]\ndim(training)\n```\n\n---\n\n## SPAM Example: K-fold\n\n```{r kfold,dependson=\"loadPackage\"}\nset.seed(32323)\nfolds <- createFolds(y=spam$type,k=10,\n                             list=TRUE,returnTrain=TRUE)\nsapply(folds,length)\nfolds[[1]][1:10]\n```\n\n---\n\n## SPAM Example: Return test\n\n```{r kfoldtest,dependson=\"loadPackage\"}\nset.seed(32323)\nfolds <- createFolds(y=spam$type,k=10,\n                             list=TRUE,returnTrain=FALSE)\nsapply(folds,length)\nfolds[[1]][1:10]\n```\n\n---\n\n## SPAM Example: Resampling\n\n```{r resample,dependson=\"loadPackage\"}\nset.seed(32323)\nfolds <- createResample(y=spam$type,times=10,\n                             list=TRUE)\nsapply(folds,length)\nfolds[[1]][1:10]\n```\n\n---\n\n## SPAM Example: Time Slices\n\n```{r time,dependson=\"loadPackage\"}\nset.seed(32323)\ntme <- 1:1000\nfolds <- createTimeSlices(y=tme,initialWindow=20,\n                          horizon=10)\nnames(folds)\nfolds$train[[1]]\nfolds$test[[1]]\n```\n\n\n---\n\n## Further information\n\n* Caret tutorials:\n  * [http://www.edii.uclm.es/~useR-2013/Tutorials/kuhn/user_caret_2up.pdf](http://www.edii.uclm.es/~useR-2013/Tutorials/kuhn/user_caret_2up.pdf)\n  * [http://cran.r-project.org/web/packages/caret/vignettes/caret.pdf](http://cran.r-project.org/web/packages/caret/vignettes/caret.pdf)\n* A paper introducing the caret package\n  * [http://www.jstatsoft.org/v28/i05/paper](http://www.jstatsoft.org/v28/i05/paper)",
+    "created" : 1408076745152.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3110441226",
+    "id" : "89DBF477",
+    "lastKnownWriteTime" : 1401046432,
+    "path" : "~/GitHub/courses/08_PracticalMachineLearning/011dataSlicing/index.Rmd",
+    "project_path" : null,
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_markdown"
+}

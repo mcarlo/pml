@@ -1,0 +1,16 @@
+{
+    "contents" : "# Allstate contest on kaggle due 5/19\n# \nsetwd(\"~/GitHub/appc/\")\nlibrary(\"randomForest\")\nlibrary(\"mice\")\n\nsubmission_Columns <- c(\"customer_ID\",\"plan\")\n\ntrain <- read.csv(\"train.csv\")\ntrain$risk_factor[is.na(train$risk_factor)] <- 0\ntrain$risk_factor <- as.character(train$risk_factor)\ntrain$C_previous[is.na(train$C_previous)] <- 0\ntrain$C_previous <- as.character(train$C_previous)\ntrain$duration_previous[is.na(train$duration_previous)] <- 0\ntrain$duration_previous <- as.character(train$duration_previous)\n\ntest <- read.csv(\"test_v2.csv\")\ntest$risk_factor[is.na(test$risk_factor)] <- 0\ntest$risk_factor <- as.character(test$risk_factor)\ntest$C_previous[is.na(test$C_previous)] <- 0\ntest$C_previous <- as.character(test$C_previous)\ntest$duration_previous[is.na(test$duration_previous)] <- 0\ntest$duration_previous <- as.character(test$duration_previous)\n\n\nstr(trainIndep)\n\nsummary(train$response)\ntrain <- train[,1:25]\ntrain$response <- train$A*1e7 + train$B*1e6 + train$C*1e5 + train$D*1e4 + train$E*1e3 + train$F*1e2 + train$G\ntrain$response <- as.character(train$response)\ntrain$response[train$A==0] <- paste(\"0\",train$response[train$A==0],sep=\"\")\ntrain$hour <- strsplit(train$time, \":\")\n\n\ntrainIndep <- train[,c(1:17,25:26)]\n\npredictions <- 100\ntestRows <- 198856\ntrainRows <- 665249\nrfApred <- matrix(rep(\"0\",testRows*predictions),nrow=testRows,ncol=predictions)\n\ni <- 1\nrfLoop <- function(){\n  for (i in 1:100){\n    set.seed(i)\n    sample.split <- sample(1:trainRows,size=1000,replace=F)\n    trainSample <- trainIndep[sample.split,]\n    system.time(rfA <- randomForest(response ~ . -customer_ID -time -state, data = trainSample, ntree = 1000,type=\"class\"))\n    system.time(rfApred[,i] <- predict(rfA,newdata=test,type=\"class\"))\n    system.time(rfTpred <- predict(rfA,newdata=train))\n    rfTpred <- round(rfTpred,0)\n    system.time(rpTpred <- predict(rpA,newdata=train))\n    rpTpred <- round(rpTpred,0)\n    rm(rfA)\n  }\n}\nsystem.time(rfLoop())\n\nset.seed(i)\n\ncolnames(train)\nrfA <- randomForest(A ~ shopping_pt + record_type + day + location + group_size + homeowner + car_age + car_value + risk_factor + age_oldest + age_youngest + married_couple + C_previous + duration_previous, data = train)\n  ?randomForest\n\n#test <- read.csv(\"test_v2.csv\")\n\nsummary(train)\nsummary(test)\nstr(train)\n\n",
+    "created" : 1408076657437.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1013051371",
+    "id" : "8273C17F",
+    "lastKnownWriteTime" : 1399901712,
+    "path" : "~/GitHub/appc/rfA.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

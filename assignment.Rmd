@@ -1,0 +1,41 @@
+---
+title: "Predicting Exercise Classe from Activity Measurements"
+author: "TMA"
+date: "Thursday, August 14, 2014"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r rfMod,cache=TRUE,echo=FALSE}
+library(knitr); library(caret); library(randomForest); library(gbm);
+#library(party);library(ElemStatLearn); 
+library(MASS);library(plyr); library(survival); library(splines);
+
+setwd("~/GitHub/pml")
+training <- read.csv("~/GitHub/pml/pml-training.csv")
+testing <- read.csv("~/GitHub/pml/pml-testing.csv")
+
+allColumns <- colnames(training)
+
+# id columns that are not NA in testing data set
+availColumns <- cbind(colnames(training),apply(testing, 2, max))
+availColumns <- availColumns[is.na(availColumns[,2])==FALSE ,1]
+availTrain <- training[, cbind(availColumns)[-c(1,3:6)]]
+availTest <- testing[, colnames(testing) %in% colnames(availTrain)]
+rm(training)
+rm(testing)
+
+# set seed and run train with method rf
+set.seed(117)
+modRF <- train(classe ~ ., method="rf",data=availTrain,verbose=FALSE,
+               type = "prob")
+```
+
+Examine the random forest final model accuracy and parameters.
+
+```{r sumRF,cache=TRUE}
+modRF
+```
