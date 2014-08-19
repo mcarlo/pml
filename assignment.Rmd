@@ -13,9 +13,9 @@ output:
 # Synopsis
 The goal of this task was to predict the manner of exercise used by participants in the Weight Lifting Exercises (WLE) Dataset <http://groupware.les.inf.puc-rio.br/har>.
 
-The WLE data describe different an experiment in which the experimenters measured activity on six human participants performing the exercise called "dumbbell biceps curls." The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes. Class A indicated they performed properly, Classes B, C, D, and E indicated they performed the exercise improperly in specific ways.
+The WLE data describe an experiment in which the experimenters measured activity on six human participants performing the exercise called "dumbbell biceps curls." The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes. Class A indicated they performed properly, Classes B, C, D, and E indicated they performed the exercise improperly in specific ways.
 
-The experimenters measured participants' activity from sensors in four locations, including three wearable devices. The measurement locations were: on the dumbbells, on a belt, on an arm-band, and on a glove. Each device's metrics included three axis measures from an accelerometer, a gyroscope, and a magnetometer.
+The experimenters measured participants' activity from sensors in four locations, including three wearable devices. The measurement locations were: on the dumbbells, on a belt worn around the waist, on an arm-band, and on a glove. Each device's metrics included three axis measures from an accelerometer, a gyroscope, and a magnetometer.
 
 To read more, visit the WLE website: <http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf>.
 
@@ -66,7 +66,7 @@ subSet5 <- availTrain[(1:trainRows)[!(row(availTrain)[,1] %in% c(subRows1, subRo
 
 ```
 
-To eliminate variables not useful in the testing data, I subset the training data to include only variables that did not have "NA" in the testing data, leaving 52 possible predictor variables. These possible predictor variables comprised 13 variables for each of the four measurement locations.
+I intended to model the data using random forests of various sizes. To eliminate variables not useful in the testing data, I subset the training data to include only variables that did not have "NA" in the testing data, leaving 52 possible predictor variables. These possible predictor variables comprised 13 variables for each of the four measurement locations.
 
 ```{r rfSub2,cache=FALSE,echo=FALSE,dependson='rsubset',results='asis'}
 library(xtable)
@@ -86,41 +86,52 @@ rfTrain  <- train(classe ~ ., method="rf",data=availTrain[,c(3:54,55)],verbose=F
 ```
 
 # Modeling: mini-random forests to identify locations' most imporant variables
-Random forest is a powerful method for predicting classification. One of its drawbacks is computation time. One unverified estimate of its complexity is 
-_O(n_ * _log(n))_. (See <http://stats.stackexchange.com/questions/37370/random-forest-computing-time-in-r>.)
+Random forest is a powerful method for predicting classification. One of its drawbacks is computation time. 
 
-To make this analysis more manageable, I trained four random forests on the first training subset, with each trained model using metrics from only one of the four locations. These random forest models were named _rfBelt_, _rfArm_, _rfDumbell_, and _rfForearm_, where _rfForearm_ referred to measurements at the "glove" location and _rfDumbell_ was subconcsiously mispelled.
+I wanted to predict the error rate on future test sets by training a random forest model on the entire training set. The random forest method grows trees randomly on subsets of the training data and selects the best one based on out of the bag (OOB) cross-validation error rates, so there is no need to conduct an additional cross validation exercise outside the random forest process.
 
-```{r rfInspect,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod')}
+However, I was curious how close I could come to the error rate from the model built using the entire training data by combining the best variables identified from subsets of the variables. I trained four random forests on the first training subset, with each trained model using metrics from only one of the four locations. These random forest models were named _rfBelt_, _rfArm_, _rfDumbell_, and _rfForearm_, where _rfForearm_ referred to measurements at the "glove" location and _rfDumbell_ was subconcsiously mispelled.
+
+Among the four mini random forest models, the following variables met the threshold of variable importance greater than 50.
+
+```{r rfInspect,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod'),results='asis'}
+library(xtable)
+
 varImpOverall <- rbind(varImp(rfBelt)$importance, varImp(rfArm)$importance, varImp(rfDumbell)$importance, varImp(rfForearm)$importance)
+
+importantVariables2a <- rownames(varImpOverall)[varImpOverall$Overall > 50]
+
+importantVariables2 <- c(rownames(varImpOverall)[varImpOverall$Overall > 50],"classe")
+
+impVar2Matrix <- matrix(importantVariables2a, ncol = 1)
+xtable2 <- xtable(impVar2Matrix)
+
+print(xtable2, type = 'html', include.rownames = FALSE)
+
 ```
 
 ```{r rftest,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod','rfInspect')}
-importantVariables2 <- c(rownames(varImpOverall)[varImpOverall$Overall > 50],"classe")
-#xtable2 <- xtable(matrix(importantVariables2[-15], ncol = 1))
-
-#print(xtable2, type = 'html', include.rownames = FALSE)
 
 system.time(rfImportant <- train(classe ~ ., method="rf",data=subSet1[,importantVariables2],verbose=FALSE))
 ```
 
-The following variables met the threshold of variable importance greater than 50.
-
-
 ```{r rfTest2,cache=TRUE,echo=TRUE,dependson=c('rsubset','rfMod','rftest')}
-importantVariables2
+rfTrain2  <- train(classe ~ ., method="rf",data=availTrain[,importantVariables2],verbose=FALSE)
+
 ```
 
-The random forest method entails cross-validation in order to select a final model; no additional cross-validation is required. As indicated below, the final model entailed cross-validation accuracy of 0.975; its OOB error rate for the selected model was 0.025. That is my expectation for the error rate on any test sets.
+Running  OOB error rate for the selected model was 0.025. That is my expectation for the error rate on any test sets.
 
 To verify this expectation, I tested the final model on training subsets 2, 3, 4, and 5. Their error rates ranged from to .
 
-```{r sumRF2,cache=TRUE,echo=TRUE,dependson=c('rsubset','rfMod','rftest')}
+```{r sumRF2,cache=TRUE,echo=TRUE,dependson=c('rsubset','rfMod','rftest', 'rfTest2')}
+library(caret)
 
-confusionMatrix(predict(rfImportant, subSet2), subSet2$classe)
-confusionMatrix(predict(rfImportant, subSet3), subSet3$classe)
-confusionMatrix(predict(rfImportant, subSet4), subSet4$classe)
-confusionMatrix(predict(rfImportant, subSet5), subSet5$classe)
+rfImportant
+rfTrain
+rfTrain2
+varImp(rfTrain)
+varImp(rfTrain2)
 
 ```
 

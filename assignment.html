@@ -73,16 +73,16 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <div id="synopsis" class="section level1">
 <h1><span class="header-section-number">1</span> Synopsis</h1>
 <p>The goal of this task was to predict the manner of exercise used by participants in the Weight Lifting Exercises (WLE) Dataset <a href="http://groupware.les.inf.puc-rio.br/har">http://groupware.les.inf.puc-rio.br/har</a>.</p>
-<p>The WLE data describe different an experiment in which the experimenters measured activity on six human participants performing the exercise called “dumbbell biceps curls.” The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes. Class A indicated they performed properly, Classes B, C, D, and E indicated they performed the exercise improperly in specific ways.</p>
-<p>The experimenters measured participants’ activity from sensors in four locations, including three wearable devices. The measurement locations were: on the dumbbells, on a belt, on an arm-band, and on a glove. Each device’s metrics included three axis measures from an accelerometer, a gyroscope, and a magnetometer.</p>
+<p>The WLE data describe an experiment in which the experimenters measured activity on six human participants performing the exercise called “dumbbell biceps curls.” The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes. Class A indicated they performed properly, Classes B, C, D, and E indicated they performed the exercise improperly in specific ways.</p>
+<p>The experimenters measured participants’ activity from sensors in four locations, including three wearable devices. The measurement locations were: on the dumbbells, on a belt worn around the waist, on an arm-band, and on a glove. Each device’s metrics included three axis measures from an accelerometer, a gyroscope, and a magnetometer.</p>
 <p>To read more, visit the WLE website: <a href="http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf">http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf</a>.</p>
 </div>
 <div id="data-processing" class="section level1">
 <h1><span class="header-section-number">2</span> Data Processing</h1>
 <p>The data consists of a preprocessed training data set including 19,622 observations among 160 variables, and a testing data set including 20 observations. The testing data did not label the “classe” variable, the discovery of which was the purpose of this analysis.</p>
-<p>To eliminate variables not useful in the testing data, I subset the training data to include only variables that did not have “NA” in the testing data, leaving 52 possible predictor variables. These possible predictor variables comprised 13 variables for each of the four measurement locations.</p>
+<p>I intended to model the data using random forests of various sizes. To eliminate variables not useful in the testing data, I subset the training data to include only variables that did not have “NA” in the testing data, leaving 52 possible predictor variables. These possible predictor variables comprised 13 variables for each of the four measurement locations.</p>
 <!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
-<!-- Sun Aug 17 20:25:56 2014 -->
+<!-- Tue Aug 19 04:36:28 2014 -->
 <TABLE border="1">
 <TR> <TH> 
 Belt
@@ -216,147 +216,180 @@ magnet_forearm_z
 </div>
 <div id="modeling-mini-random-forests-to-identify-locations-most-imporant-variables" class="section level1">
 <h1><span class="header-section-number">3</span> Modeling: mini-random forests to identify locations’ most imporant variables</h1>
-<p>Random forest is a powerful method for predicting classification. One of its drawbacks is computation time. One unverified estimate of its complexity is <em>O(n</em> * <em>log(n))</em>. (See <a href="http://stats.stackexchange.com/questions/37370/random-forest-computing-time-in-r">http://stats.stackexchange.com/questions/37370/random-forest-computing-time-in-r</a>.)</p>
-<p>To make this analysis more manageable, I trained four random forests on the first training subset, with each trained model using metrics from only one of the four locations. These random forest models were named <em>rfBelt</em>, <em>rfArm</em>, <em>rfDumbell</em>, and <em>rfForearm</em>, where <em>rfForearm</em> referred to measurements at the “glove” location and <em>rfDumbell</em> was subconcsiously mispelled.</p>
+<p>Random forest is a powerful method for predicting classification. One of its drawbacks is computation time.</p>
+<p>I wanted to predict the error rate on future test sets by training a random forest model on the entire training set. The random forest method grows trees randomly on subsets of the training data and selects the best one based on out of the bag (OOB) cross-validation error rates, so there is no need to conduct an additional cross validation exercise outside the random forest process.</p>
+<p>However, I was curious how close I could come to the error rate from the model built using the entire training data by combining the best variables identified from subsets of the variables. I trained four random forests on the first training subset, with each trained model using metrics from only one of the four locations. These random forest models were named <em>rfBelt</em>, <em>rfArm</em>, <em>rfDumbell</em>, and <em>rfForearm</em>, where <em>rfForearm</em> referred to measurements at the “glove” location and <em>rfDumbell</em> was subconcsiously mispelled.</p>
+<p>Among the four mini random forest models, the following variables met the threshold of variable importance greater than 50.</p>
+<!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
+<!-- Tue Aug 19 04:36:34 2014 -->
+<TABLE border="1">
+<TR> <TH> 
+x
+</TH>  </TR>
+  <TR> <TD> 
+roll_belt
+</TD> </TR>
+  <TR> <TD> 
+pitch_belt
+</TD> </TR>
+  <TR> <TD> 
+yaw_belt
+</TD> </TR>
+  <TR> <TD> 
+roll_arm
+</TD> </TR>
+  <TR> <TD> 
+pitch_arm
+</TD> </TR>
+  <TR> <TD> 
+gyros_arm_x
+</TD> </TR>
+  <TR> <TD> 
+accel_arm_x
+</TD> </TR>
+  <TR> <TD> 
+accel_arm_y
+</TD> </TR>
+  <TR> <TD> 
+accel_arm_z
+</TD> </TR>
+  <TR> <TD> 
+magnet_arm_y
+</TD> </TR>
+  <TR> <TD> 
+magnet_dumbbell_y
+</TD> </TR>
+  <TR> <TD> 
+magnet_dumbbell_z
+</TD> </TR>
+  <TR> <TD> 
+roll_forearm
+</TD> </TR>
+  <TR> <TD> 
+pitch_forearm
+</TD> </TR>
+   </TABLE>
+
+
 <pre><code>##    user  system elapsed 
-##  384.33    5.77  398.45</code></pre>
-<p>The following variables met the threshold of variable importance greater than 50.</p>
-<pre class="sourceCode r"><code class="sourceCode r">importantVariables2</code></pre>
-<pre><code>##  [1] &quot;roll_belt&quot;         &quot;pitch_belt&quot;        &quot;yaw_belt&quot;         
-##  [4] &quot;roll_arm&quot;          &quot;pitch_arm&quot;         &quot;gyros_arm_x&quot;      
-##  [7] &quot;accel_arm_x&quot;       &quot;accel_arm_y&quot;       &quot;accel_arm_z&quot;      
-## [10] &quot;magnet_arm_y&quot;      &quot;magnet_dumbbell_y&quot; &quot;magnet_dumbbell_z&quot;
-## [13] &quot;roll_forearm&quot;      &quot;pitch_forearm&quot;     &quot;classe&quot;</code></pre>
-<p>The random forest method entails cross-validation in order to select a final model; no additional cross-validation is required. As indicated below, the final model entailed cross-validation accuracy of 0.975; its OOB error rate for the selected model was 0.025. That is my expectation for the error rate on any test sets.</p>
+##  407.89    6.34  424.89</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">rfTrain2  &lt;-<span class="st"> </span><span class="kw">train</span>(classe ~<span class="st"> </span>., <span class="dt">method=</span><span class="st">&quot;rf&quot;</span>,<span class="dt">data=</span>availTrain[,importantVariables2],<span class="dt">verbose=</span><span class="ot">FALSE</span>)</code></pre>
+<p>Running OOB error rate for the selected model was 0.025. That is my expectation for the error rate on any test sets.</p>
 <p>To verify this expectation, I tested the final model on training subsets 2, 3, 4, and 5. Their error rates ranged from to .</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confusionMatrix</span>(<span class="kw">predict</span>(rfImportant, subSet2), subSet2$classe)</code></pre>
-<pre><code>## Confusion Matrix and Statistics
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(caret)
+
+<span class="co">#confusionMatrix(predict(rfImportant, subSet2), subSet2$classe)</span>
+<span class="co">#confusionMatrix(predict(rfImportant, subSet3), subSet3$classe)</span>
+<span class="co">#confusionMatrix(predict(rfImportant, subSet4), subSet4$classe)</span>
+<span class="co">#confusionMatrix(predict(rfImportant, subSet5), subSet5$classe)</span>
+
+rfImportant</code></pre>
+<pre><code>## Random Forest 
 ## 
-##           Reference
-## Prediction    A    B    C    D    E
-##          A 1090   10    0    2    0
-##          B    6  716   12    0    7
-##          C    4   24  693   20    9
-##          D    1    0    5  621    5
-##          E    4    2    1    4  688
+## 3924 samples
+##   14 predictors
+##    5 classes: 'A', 'B', 'C', 'D', 'E' 
 ## 
-## Overall Statistics
-##                                         
-##                Accuracy : 0.97          
-##                  95% CI : (0.965, 0.976)
-##     No Information Rate : 0.282         
-##     P-Value [Acc &gt; NIR] : &lt;2e-16        
-##                                         
-##                   Kappa : 0.963         
-##  Mcnemar's Test P-Value : NA            
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
 ## 
-## Statistics by Class:
+## Summary of sample sizes: 3924, 3924, 3924, 3924, 3924, 3924, ... 
 ## 
-##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity             0.986    0.952    0.975    0.960    0.970
-## Specificity             0.996    0.992    0.982    0.997    0.997
-## Pos Pred Value          0.989    0.966    0.924    0.983    0.984
-## Neg Pred Value          0.995    0.989    0.994    0.992    0.993
-## Prevalence              0.282    0.192    0.181    0.165    0.181
-## Detection Rate          0.278    0.182    0.177    0.158    0.175
-## Detection Prevalence    0.281    0.189    0.191    0.161    0.178
-## Balanced Accuracy       0.991    0.972    0.978    0.978    0.983</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confusionMatrix</span>(<span class="kw">predict</span>(rfImportant, subSet3), subSet3$classe)</code></pre>
-<pre><code>## Confusion Matrix and Statistics
+## Resampling results across tuning parameters:
 ## 
-##           Reference
-## Prediction    A    B    C    D    E
-##          A 1130   15    0    0    1
-##          B   10  710   17    2    0
-##          C    5   21  694   21    6
-##          D    1    0    4  573    9
-##          E    5    3    0    6  691
+##   mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
+##   2     1         0.9    0.009        0.01    
+##   8     0.9       0.9    0.008        0.01    
+##   10    0.9       0.9    0.009        0.01    
 ## 
-## Overall Statistics
-##                                         
-##                Accuracy : 0.968         
-##                  95% CI : (0.962, 0.973)
-##     No Information Rate : 0.293         
-##     P-Value [Acc &gt; NIR] : &lt; 2e-16       
-##                                         
-##                   Kappa : 0.959         
-##  Mcnemar's Test P-Value : 0.000247      
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was mtry = 2.</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">rfTrain</code></pre>
+<pre><code>## Random Forest 
 ## 
-## Statistics by Class:
+## 19622 samples
+##    52 predictors
+##     5 classes: 'A', 'B', 'C', 'D', 'E' 
 ## 
-##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity             0.982    0.948    0.971    0.952    0.977
-## Specificity             0.994    0.991    0.983    0.996    0.996
-## Pos Pred Value          0.986    0.961    0.929    0.976    0.980
-## Neg Pred Value          0.992    0.988    0.993    0.991    0.995
-## Prevalence              0.293    0.191    0.182    0.153    0.180
-## Detection Rate          0.288    0.181    0.177    0.146    0.176
-## Detection Prevalence    0.292    0.188    0.190    0.150    0.180
-## Balanced Accuracy       0.988    0.969    0.977    0.974    0.987</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confusionMatrix</span>(<span class="kw">predict</span>(rfImportant, subSet4), subSet4$classe)</code></pre>
-<pre><code>## Confusion Matrix and Statistics
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
 ## 
-##           Reference
-## Prediction    A    B    C    D    E
-##          A 1135   13    0    0    0
-##          B    7  733    9    1   14
-##          C    2   19  650   28    4
-##          D    0    1    3  617    7
-##          E    6    2    0    1  673
+## Summary of sample sizes: 19622, 19622, 19622, 19622, 19622, 19622, ... 
 ## 
-## Overall Statistics
-##                                         
-##                Accuracy : 0.97          
-##                  95% CI : (0.964, 0.975)
-##     No Information Rate : 0.293         
-##     P-Value [Acc &gt; NIR] : &lt;2e-16        
-##                                         
-##                   Kappa : 0.962         
-##  Mcnemar's Test P-Value : NA            
+## Resampling results across tuning parameters:
 ## 
-## Statistics by Class:
+##   mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
+##   2     1         1      0.001        0.002   
+##   30    1         1      0.001        0.001   
+##   50    1         1      0.004        0.005   
 ## 
-##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity             0.987    0.954    0.982    0.954    0.964
-## Specificity             0.995    0.990    0.984    0.997    0.997
-## Pos Pred Value          0.989    0.959    0.925    0.982    0.987
-## Neg Pred Value          0.995    0.989    0.996    0.991    0.992
-## Prevalence              0.293    0.196    0.169    0.165    0.178
-## Detection Rate          0.289    0.187    0.166    0.157    0.171
-## Detection Prevalence    0.292    0.195    0.179    0.160    0.174
-## Balanced Accuracy       0.991    0.972    0.983    0.975    0.981</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confusionMatrix</span>(<span class="kw">predict</span>(rfImportant, subSet5), subSet5$classe)</code></pre>
-<pre><code>## Confusion Matrix and Statistics
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was mtry = 2.</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">rfTrain2</code></pre>
+<pre><code>## Random Forest 
 ## 
-##           Reference
-## Prediction    A    B    C    D    E
-##          A 1064   21    0    0    0
-##          B    3  742   18    2    5
-##          C    3   18  641   30    5
-##          D    0    0    4  639    7
-##          E    3    4    0    6  710
+## 19622 samples
+##    14 predictors
+##     5 classes: 'A', 'B', 'C', 'D', 'E' 
 ## 
-## Overall Statistics
-##                                         
-##                Accuracy : 0.967         
-##                  95% CI : (0.961, 0.972)
-##     No Information Rate : 0.273         
-##     P-Value [Acc &gt; NIR] : &lt;2e-16        
-##                                         
-##                   Kappa : 0.959         
-##  Mcnemar's Test P-Value : NA            
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
 ## 
-## Statistics by Class:
+## Summary of sample sizes: 19622, 19622, 19622, 19622, 19622, 19622, ... 
 ## 
-##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity             0.992    0.945    0.967    0.944    0.977
-## Specificity             0.993    0.991    0.983    0.997    0.996
-## Pos Pred Value          0.981    0.964    0.920    0.983    0.982
-## Neg Pred Value          0.997    0.986    0.993    0.988    0.995
-## Prevalence              0.273    0.200    0.169    0.172    0.185
-## Detection Rate          0.271    0.189    0.163    0.163    0.181
-## Detection Prevalence    0.276    0.196    0.178    0.166    0.184
-## Balanced Accuracy       0.992    0.968    0.975    0.970    0.986</code></pre>
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
+##   2     1         1      0.001        0.001   
+##   8     1         1      0.001        0.002   
+##   10    1         1      0.003        0.004   
+## 
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was mtry = 2.</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">varImp</span>(rfTrain)</code></pre>
+<pre><code>## rf variable importance
+## 
+##   only 20 most important variables shown (out of 52)
+## 
+##                   Overall
+## roll_belt           100.0
+## yaw_belt             82.1
+## magnet_dumbbell_z    69.0
+## magnet_dumbbell_y    64.4
+## pitch_belt           63.2
+## pitch_forearm        62.0
+## magnet_dumbbell_x    54.7
+## roll_forearm         51.9
+## accel_dumbbell_y     45.1
+## magnet_belt_z        43.8
+## roll_dumbbell        42.6
+## magnet_belt_y        42.0
+## accel_belt_z         41.4
+## accel_dumbbell_z     38.2
+## roll_arm             36.0
+## accel_forearm_x      31.4
+## accel_dumbbell_x     30.2
+## yaw_dumbbell         29.5
+## magnet_arm_y         29.5
+## total_accel_belt     29.4</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">varImp</span>(rfTrain2)</code></pre>
+<pre><code>## rf variable importance
+## 
+##                   Overall
+## roll_belt         100.000
+## yaw_belt           74.469
+## magnet_dumbbell_y  54.242
+## pitch_belt         54.138
+## magnet_dumbbell_z  51.246
+## pitch_forearm      46.968
+## roll_forearm       35.109
+## roll_arm           24.463
+## accel_arm_x        11.391
+## magnet_arm_y       11.248
+## pitch_arm           4.238
+## accel_arm_y         2.742
+## accel_arm_z         0.696
+## gyros_arm_x         0.000</code></pre>
 <p>I would predict accuracy of 0.98 on the testing data. The chance of predicting all 20 correctly is 0.98^20, or 0.67.</p>
 </div>
 
