@@ -138,6 +138,7 @@ importantVariables2a <- rownames(varImpOverall)[varImpOverall$Overall > 50]
 importantVariables2 <- c(rownames(varImpOverall)[varImpOverall$Overall > 50],"classe")
 
 impVar2Matrix <- matrix(importantVariables2a, ncol = 1)
+colnames(impVar2Matrix) <- "All locations"
 xtable2 <- xtable(impVar2Matrix)
 
 print(xtable2, type = 'html', include.rownames = FALSE)
