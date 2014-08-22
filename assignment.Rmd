@@ -26,28 +26,30 @@ knit_hooks$set(inline = function(x) {
 knit_hooks$set(plot = knitr:::hook_plot_html)
 ```
 
-========================================
 
 ## 1. Summary
-The goal of this task was to predict the manner of exercise used by participants in the Weight Lifting Exercises (WLE) Dataset <http://groupware.les.inf.puc-rio.br/har>.
+The goal of this task was to predict the manner of exercise performed by participants in the Weight Lifting Exercises (WLE) Dataset <http://groupware.les.inf.puc-rio.br/har>.
 
-I compared two approaches, both using the random forest method. In the first approach I trained a random forest model on the entire training set. 
+I compared two approaches for modeling predictions, both using the random forest method. In the first approach I trained a single random forest model on the entire training set. 
 
-The second approach took two steps. First I identified the most important among different groups of variables using four distinct random forest models. Then I built a random forest model on the entire data set using only the variables identified as most important in the first step.
+The second approach took two steps. First I identified the most important variables within four distinct random forest models. Then I built a random forest model on the entire data set using only the variables identified as most important in the four models in the first step.
 
-Both approaches resulted in accuracy that rounds to 1.0. The expected out of sample error rates are 0.41% and 0.39%, respectively.
+Both approaches resulted in accuracy that rounds to 1.0. The expected out of sample error rates were 0.41% and 0.35%, respectively.
 
 
 ## 2. Data Processing
 ### The experiment
-The WLE data describe an experiment in which the experimenters measured activity on six human participants performing exercises called "dumbbell biceps curls." The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes. Class A indicated they performed properly, Classes B, C, D, and E indicated they performed the exercise improperly in specifically defined ways.
+The WLE data describe an experiment in which six human participants performed exercises known as _dumbbell biceps curls_. The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes: Class A indicated proper form, while Classes B, C, D, and E indicated improper form, instructed in specific ways.
 
-The experimenters measured participants' activity from sensors in four locations, including three wearable devices. The locations were on the dumbbells, on a belt worn around the waist, on an arm-band, and on a glove. Each device's metrics included three-axis measures from an accelerometer, a gyroscope, and a magnetometer.
+The experimenters measured participants' activity from four sensors in different locations, including on three wearable devices. The locations were on the dumbbells themselves, on a belt worn around the waist, on an arm-band, and on a glove. Each device's metrics included tri-axis measures from an accelerometer, a gyroscope, and a magnetometer.
 
 To read more, visit the WLE website: <http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf>.
 
 ### The data
 The data consists of a preprocessed training data set including 19,622 observations among 160 variables, and a testing data set including 20 observations. The testing data did not label the "classe" variable, the discovery of which was the purpose of this analysis. 
+
+#### Removing non-predictive variables
+To eliminate variables not useful in the testing data, I subset the training data to include only variables that did not have "NA" in the testing data, leaving 52 possible predictor variables. These possible predictor variables comprised 13 variables for each of the four measurement locations.
 
 ```{r rsubset,cache=TRUE,echo=FALSE}
 library(knitr); library(caret); library(randomForest); library(gbm);
@@ -92,9 +94,6 @@ subSet5 <- availTrain[(1:trainRows)[!(row(availTrain)[,1] %in% c(subRows1, subRo
 
 ```
 
-#### Removing non-predictive variables
-To eliminate variables not useful in the testing data, I subset the training data to include only variables that did not have "NA" in the testing data, leaving 52 possible predictor variables. These possible predictor variables comprised 13 variables for each of the four measurement locations.
-
 ##### Table 1: Predictive Variables
 ```{r rfSub2,cache=FALSE,echo=FALSE,dependson='rsubset',results='asis'}
 library(xtable)
@@ -102,7 +101,7 @@ xtab1 <- xtable(wleVariables)
 print(xtab1, type = "html", include.rownames = FALSE)
 ```
 
-I also split the training data equally among five subsets by randomly sampling the "classe" (outcome) variable. The first subset was the training data for each of the location-specific random forest models, as discussed later.
+I also subset 20% of the training data by randomly sampling the "classe" (outcome) variable. I employed this subset to train four location-specific random forest models, as described in Section 3.
 
 ```{r rfMod,cache=TRUE,echo=FALSE,dependson='rsubset'}
 set.seed(60614)
@@ -114,10 +113,13 @@ rfTrain  <- train(classe ~ ., method="rf",data=availTrain[,c(3:54,55)],verbose=F
 ```
 
 ## 3. Modeling
-### Identify most imporant variables with mini forests
-In addition to training a random forest model _rfTrain_ on the entire training set, I also trained four random forest models on the first training data subset, which comprised 20% of the training data. 
+### Model 1: _rfTrain_
+I trained a random forest model on the entire training set using the default parameters from the caret package.
 
-I was curious how close I could come to the error rate from _rfTrain_ by combining the best variables identified from location-specific subsets of the variables. I trained all four mini random forests on the first training subset, with each trained model using metrics from only one of the four locations. I named these models _rfBelt_, _rfArm_, _rfDumbell_, and _rfForearm_, where _rfForearm_ referred to measurements at the "glove" location and where, with subconscious irony, I misspelled _rfDumbell_.
+### Model 2: _rfTrain2_
+I also trained four random forest models on a training data subset which comprised 20% of the training data, using the default parameters from the caret package. I confined each model to a specific device location.
+
+Combining the most important variables from each location - defining "important" as greater than 50 - I trained a random forest model on the entire training data set using only the important variables and using the default parameters from the caret package.
 
 ## 4. Results
 ### Important variables
@@ -125,7 +127,7 @@ The random forest method grows trees randomly on subsets of the training data an
 
 Among the four mini random forest models, the following variables met the threshold of variable importance greater than 50.
 
-##### Table 2. Most important variables
+##### Table 2. Most important variables from discrete location models
 ```{r rfInspect,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod'),results='asis'}
 library(xtable)
 
@@ -147,8 +149,8 @@ rfTrain2  <- train(classe ~ ., method="rf",data=availTrain[,importantVariables2]
 
 ```
 
-### Final model: rfTrain
-_rfTrain_ is the model generated in a single step, training a random forest model on the entire training data set among all 52 predictor variables. 
+### rfTrain results
+_rfTrain_ is the model generated in a single step, training a random forest model on the entire training data set among all 52 predictor variables. Its predicted error rate, estimated from the OOB error rate used to select the best tree, was 0.41%.
 
 ```{r plot1,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
 library(caret)
@@ -156,8 +158,8 @@ rfTrain$finalModel
 
 ```
 
-### Final model: rfTrain2
-_rfTrain2_ is the model generated in two steps, with the first step training four random forest models on the entire training data set among 13 predictor variables for one device location, and the second step training a single random forest model on the entire training set using only variables whose importance was greater than 50 in the first step. 
+### rfTrain2 results
+_rfTrain2_ is the model generated in two steps, with the first step training four random forest models on 20% of the training data, with each model confined to 13 predictor variables from one device location. The second step consisted of training a single random forest model on the entire training set using only variables whose importance was greater than 50 in the first step. Its predicted error rate, estimated from the OOB error rate used to select the best tree, was 0.35%.
 
 ```{r plot2,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
 library(caret)
@@ -166,17 +168,25 @@ rfTrain2$finalModel
 ```
 
 ## 5. Error prediction
-The expected out of sample error rate for _rfTrain_ is 0.41% and for _rfTrain2_ is 0.39%. Both equal their respective OOB error rate, which is an unbiased estimate of out of sample error rate (see <http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr>).
+The OOB error rate is an unbiased estimate of out of sample error rate (see <http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr>), so there is no need for additional cross validation.
 
-Unlike many other machine learning methods, random forest entails cross validation when building forests so there is no need for a modeler to hold out data for cross validation. (See random forest's documentation on this point at <http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr>)
+For either model, the expected likelihood of predicting all 20 test cases correctly on using _rfTrain2_ is approximately 0.9965^20, or 0.93. 
 
-For either model, the expected likelihood of predicting all 20 test cases correctly on the first attempt is approximately 0.996^20, or 0.92. The expected likelihood of getting all twenty correct after two attempts each is 0.92 + 0.08*0.92 = 0.9936.
+========================================
 
+## Appendix
+
+### Figure 1. Most Important Variables, _rfTrain_
 ```{r plot3,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
 library(caret)
 varImp1 <- varImp(rfTrain)
 plot(varImp1, top = 10)
 
+```
+
+### Figure 2. Most Important Variables, _rfTrain2_
+```{r plot4,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
+library(caret)
 varImp2 <- varImp(rfTrain)
 plot(varImp2, top = 10)
 
