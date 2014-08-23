@@ -34,14 +34,14 @@ I compared two approaches for modeling predictions, both using the random forest
 
 The second approach took two steps. First I identified the most important variables within four distinct random forest models. Then I built a random forest model on the entire data set using only the variables identified as most important in the four models in the first step.
 
-Both approaches resulted in accuracy that rounds to 1.0. The expected out of sample error rates were 0.57% and 0.50%, respectively.
+Both approaches resulted in expected accuracy (based on their respective OOB accuracy) that rounds to 1.0. The expected out of sample error rates were 0.57% and 0.50%, respectively.
 
 
 ## 2. Data Processing
 ### The experiment
-The WLE data describe an experiment in which six human participants performed exercises known as _dumbbell biceps curls_. The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes: Class A indicated proper form, while Classes B, C, D, and E indicated improper form, instructed in specific ways.
+The WLE data describe an experiment in which six human participants performed exercises known as _dumbbell biceps curls_. The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes: Class A indicated proper form, while Classes B, C, D, and E indicated improper form, defined in specific ways.
 
-The experimenters measured participants' activity from four sensors in different locations, including on three wearable devices. The locations were on the dumbbells themselves, on a belt worn around the waist, on an arm-band, and on a glove. Each device's metrics included tri-axis measures from an accelerometer, a gyroscope, and a magnetometer.
+The experimenters measured participants' activity from sensors in four different locations, including on three wearable devices. The locations were on the dumbbells themselves, on a belt worn around the waist, on an arm-band, and on a glove. Each device's metrics included tri-axis measures from an accelerometer, a gyroscope, and a magnetometer.
 
 To read more, visit the WLE website: <http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf>.
 
@@ -51,7 +51,7 @@ The data consists of a preprocessed training data set including 19,622 observati
 #### Removing non-predictive variables
 To eliminate variables not derived from wearable device measurements, I subset the training data to include only variables that reflected discrete measures from the wearable devices, leaving 52 possible predictor variables. These possible predictor variables comprised 13 variables for each of the four devices.
 
-Then I subset the training data into fifths, randomly sampling the outcome variable, "classe."
+Then I split the training data 80/20, randomly sampling the outcome variable, "classe."
 
 Table 1 lists the predictor variables used in the first model.
 ```{r rsubset,cache=TRUE,echo=FALSE}
@@ -121,13 +121,13 @@ rfTrain  <- train(classe ~ ., method="rf",data=sampleTrain[,c(3:54,55)],verbose=
 I trained a random forest model on 80% of the training set using the default parameters from the caret package.
 
 ### Model 2: _rfTrain2_
-I also trained four random forest models - _rfBelt_, _rfArm_, _rfDumbbells_, _rfForearm_ - on 80% of the training set, using the default parameters from the caret package. I confined each model to a specific device location, hence their names.
+I also trained four random forest models - _rfBelt_, _rfArm_, _rfDumbbells_, _rfForearm_ - on 80% of the training set, using the default parameters from the caret package. According to their names, I confined each model to variables from its appropriate device location.
 
-Combining the most important variables from each location - defining "important" as greater than 50 - I trained a random forest model on the same 80% subset of the training data set used for _rfTrain_ using only the important variables and using the default parameters from the caret package.
+Using only the most important variables identified from each location - defining "important" as greater than 50 - I trained a random forest model on the same training data subset, using the default parameters from the caret package.
 
 ## 4. Results
 ### Important variables
-Among the four mini random forest models, the following variables met the threshold of variable importance greater than 50.
+Among the four location-specific random forest models, the following variables met the threshold of variable importance greater than 50.
 
 ##### Table 2. Most important variables from each location
 ```{r rfInspect,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod'),results='asis'}
@@ -169,7 +169,7 @@ library(caret)
 rfTrain2$finalModel
 
 ```
-## 5. Most important variable locations: belt, dumbbells, forearm
+## 5. Most important locations: belt, dumbbells, forearm
 It is not surprising that measures from the arm location was not among the most important variables in either final model. I do find it surprising that the belt location was so important, which makes me wonder exactly how classes B, C, D, and E were performed that belt measurements were helpful at all. 
 
 ### Figure 1. Most Important Variables, _rfTrain_
@@ -189,9 +189,11 @@ plot(varImp2, top = 10)
 ```
 
 ## 6. Error prediction
-The OOB error rate is an unbiased estimate of out of sample error rate (see <http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr>), so there is no need for additional cross validation.
+The OOB error rate is an unbiased estimate of out of sample error rate, so there is no need for additional cross validation (see <http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr>).
 
-For graders who insist on cross-validation, I tested both models on the held-out training data. The first model's error prediction (based on the OOB error rate) is 0.57%. When tested on the cross-validation sample, the error rate was 0.7643%.
+For any graders who insist on additional cross-validation, I also tested both models on the held-out training data. 
+
+The first model's error prediction (based on the OOB error rate) is 0.57%. When tested on the cross-validation sample, the error rate was 0.7643%.
 
 The second model's error prediction (based on the OOB error rate) is 0.50%. When tested on the cross-validation sample, the error rate was 0.6115%.
 

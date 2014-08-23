@@ -75,14 +75,14 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <p>The goal of this task was to predict the manner of exercise performed by participants in the Weight Lifting Exercises (WLE) Dataset <a href="http://groupware.les.inf.puc-rio.br/har">http://groupware.les.inf.puc-rio.br/har</a>.</p>
 <p>I compared two approaches for modeling predictions, both using the random forest method. In the first approach I trained a single random forest model on all the predictor variables in a single step.</p>
 <p>The second approach took two steps. First I identified the most important variables within four distinct random forest models. Then I built a random forest model on the entire data set using only the variables identified as most important in the four models in the first step.</p>
-<p>Both approaches resulted in accuracy that rounds to 1.0. The expected out of sample error rates were 0.57% and 0.50%, respectively.</p>
+<p>Both approaches resulted in expected accuracy (based on their respective OOB accuracy) that rounds to 1.0. The expected out of sample error rates were 0.57% and 0.50%, respectively.</p>
 </div>
 <div id="data-processing" class="section level2">
 <h2>2. Data Processing</h2>
 <div id="the-experiment" class="section level3">
 <h3>The experiment</h3>
-<p>The WLE data describe an experiment in which six human participants performed exercises known as <em>dumbbell biceps curls</em>. The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes: Class A indicated proper form, while Classes B, C, D, and E indicated improper form, instructed in specific ways.</p>
-<p>The experimenters measured participants’ activity from four sensors in different locations, including on three wearable devices. The locations were on the dumbbells themselves, on a belt worn around the waist, on an arm-band, and on a glove. Each device’s metrics included tri-axis measures from an accelerometer, a gyroscope, and a magnetometer.</p>
+<p>The WLE data describe an experiment in which six human participants performed exercises known as <em>dumbbell biceps curls</em>. The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes: Class A indicated proper form, while Classes B, C, D, and E indicated improper form, defined in specific ways.</p>
+<p>The experimenters measured participants’ activity from sensors in four different locations, including on three wearable devices. The locations were on the dumbbells themselves, on a belt worn around the waist, on an arm-band, and on a glove. Each device’s metrics included tri-axis measures from an accelerometer, a gyroscope, and a magnetometer.</p>
 <p>To read more, visit the WLE website: <a href="http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf">http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf</a>.</p>
 </div>
 <div id="the-data" class="section level3">
@@ -91,12 +91,12 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <div id="removing-non-predictive-variables" class="section level4">
 <h4>Removing non-predictive variables</h4>
 <p>To eliminate variables not derived from wearable device measurements, I subset the training data to include only variables that reflected discrete measures from the wearable devices, leaving 52 possible predictor variables. These possible predictor variables comprised 13 variables for each of the four devices.</p>
-<p>Then I subset the training data into fifths, randomly sampling the outcome variable, “classe.”</p>
+<p>Then I split the training data 80/20, randomly sampling the outcome variable, “classe.”</p>
 <p>Table 1 lists the predictor variables used in the first model.</p>
 <div id="table-1-predictive-variables" class="section level5">
 <h5>Table 1: Predictive Variables</h5>
 <!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
-<!-- Fri Aug 22 19:09:50 2014 -->
+<!-- Fri Aug 22 19:26:37 2014 -->
 <TABLE border="1">
 <TR> <TH> 
 Belt
@@ -241,15 +241,15 @@ magnet_forearm_z
 </div>
 <div id="model-2-rftrain2" class="section level3">
 <h3>Model 2: <em>rfTrain2</em></h3>
-<p>I also trained four random forest models - <em>rfBelt</em>, <em>rfArm</em>, <em>rfDumbbells</em>, <em>rfForearm</em> - on 80% of the training set, using the default parameters from the caret package. I confined each model to a specific device location, hence their names.</p>
-<p>Combining the most important variables from each location - defining “important” as greater than 50 - I trained a random forest model on the same 80% subset of the training data set used for <em>rfTrain</em> using only the important variables and using the default parameters from the caret package.</p>
+<p>I also trained four random forest models - <em>rfBelt</em>, <em>rfArm</em>, <em>rfDumbbells</em>, <em>rfForearm</em> - on 80% of the training set, using the default parameters from the caret package. According to their names, I confined each model to variables from its appropriate device location.</p>
+<p>Using only the most important variables identified from each location - defining “important” as greater than 50 - I trained a random forest model on the same training data subset, using the default parameters from the caret package.</p>
 </div>
 </div>
 <div id="results" class="section level2">
 <h2>4. Results</h2>
 <div id="important-variables" class="section level3">
 <h3>Important variables</h3>
-<p>Among the four mini random forest models, the following variables met the threshold of variable importance greater than 50.</p>
+<p>Among the four location-specific random forest models, the following variables met the threshold of variable importance greater than 50.</p>
 <div id="table-2.-most-important-variables-from-each-location" class="section level5">
 <h5>Table 2. Most important variables from each location</h5>
 <!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
@@ -345,8 +345,8 @@ D    0    0   17 2520    2    0.007483
 E    0    4    3    6 2867    0.004514</code></pre>
 </div>
 </div>
-<div id="most-important-variable-locations-belt-dumbbells-forearm" class="section level2">
-<h2>5. Most important variable locations: belt, dumbbells, forearm</h2>
+<div id="most-important-locations-belt-dumbbells-forearm" class="section level2">
+<h2>5. Most important locations: belt, dumbbells, forearm</h2>
 <p>It is not surprising that measures from the arm location was not among the most important variables in either final model. I do find it surprising that the belt location was so important, which makes me wonder exactly how classes B, C, D, and E were performed that belt measurements were helpful at all.</p>
 <div id="figure-1.-most-important-variables-rftrain" class="section level3">
 <h3>Figure 1. Most Important Variables, <em>rfTrain</em></h3>
@@ -363,8 +363,9 @@ E    0    4    3    6 2867    0.004514</code></pre>
 </div>
 <div id="error-prediction" class="section level2">
 <h2>6. Error prediction</h2>
-<p>The OOB error rate is an unbiased estimate of out of sample error rate (see <a href="http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr">http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr</a>), so there is no need for additional cross validation.</p>
-<p>For graders who insist on cross-validation, I tested both models on the held-out training data. The first model’s error prediction (based on the OOB error rate) is 0.57%. When tested on the cross-validation sample, the error rate was 0.7643%.</p>
+<p>The OOB error rate is an unbiased estimate of out of sample error rate, so there is no need for additional cross validation (see <a href="http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr">http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr</a>).</p>
+<p>For any graders who insist on additional cross-validation, I also tested both models on the held-out training data.</p>
+<p>The first model’s error prediction (based on the OOB error rate) is 0.57%. When tested on the cross-validation sample, the error rate was 0.7643%.</p>
 <p>The second model’s error prediction (based on the OOB error rate) is 0.50%. When tested on the cross-validation sample, the error rate was 0.6115%.</p>
 <p>For either model, the expected likelihood of predicting all 20 test cases correctly on using <em>rfTrain2</em> is approximately 0.995^20, or 0.90.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(caret)
