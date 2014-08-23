@@ -28,7 +28,7 @@ knit_hooks$set(plot = knitr:::hook_plot_html)
 
 
 ## 1. Summary
-The goal of this task was to predict the manner of exercise (specifically, biceps curls) performed by participants in the Weight Lifting Exercises (WLE) Dataset <http://groupware.les.inf.puc-rio.br/har>. Predictive data consisted of different measurements obtained from four different wearable devices.
+The goal of this task was to predict the manner of exercise (specifically, biceps curls) performed by participants in the Weight Lifting Exercises (WLE) Dataset <http://groupware.les.inf.puc-rio.br/har>. Predictive data consisted of activity measurements obtained from four different wearable devices.
 
 I compared two approaches for modeling predictions, both using the random forest method. In the first approach I trained a single random forest model on all the predictor variables in a single step. 
 
@@ -183,12 +183,12 @@ plot(varImp2, top = 10, main = "rfTrain2")
 
 ```
 
-That the dumbbells themselves were an important measurement location for differentiating correct performance of biceps curls does not surprise me. What did surprise me is that the belt location was so important. It makes me wonder exactly how classes B, C, D, and E were performed such that belt measurements were helpful at distinguishing them. 
+That the dumbbells themselves were an important measurement location for differentiating correct performance of biceps curls did not surprise me. What did surprise me is that the belt location was so important. It made me wonder exactly how classes B, C, D, and E were performed such that belt measurements were helpful at distinguishing them. 
 
 ## 6. Error prediction
 The OOB error rate is an unbiased estimate of out of sample error rate, so there is no need for additional cross validation (see <http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr>).
 
-For any graders who insist on additional cross-validation, below I report out-of-sample error rates for both models on the held-out training data. 
+For any graders who, despite the knowledge that random forests do not require cross validation, insist on additional cross-validation, below I report out-of-sample error rates for both models on the held-out training data. 
 
 ```{r predict1,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
 library(caret)
