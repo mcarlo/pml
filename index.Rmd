@@ -1,7 +1,7 @@
 ---
 title: "Predicting Exercise Class from Activity Measurement"
 author: "TMA"
-date: "Saturday, August 22, 2014"
+date: "Saturday, August 23, 2014"
 output:
   html_document:
     highlight: kate
@@ -153,7 +153,7 @@ rfTrain2  <- train(classe ~ ., method="rf",data=sampleTrain[,importantVariables2
 ```
 
 ### rfTrain results
-_rfTrain_ is the model I generated in a single step, training a random forest model on the entire training data set among all 52 predictor variables. Its predicted error rate, estimated from the OOB error rate used to select the best tree, was 0.57%.
+_rfTrain_ is the model I generated in a single step, training a random forest model on the 80% training data sample among all 52 predictor variables. Its predicted error rate, estimated from the OOB error rate used to select the best tree, was 0.57%.
 
 ```{r plot1,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
 library(caret)
@@ -162,7 +162,7 @@ trainError <- round(1.0000 - rfTrain$results$Accuracy[2], 4)
 ```
 
 ### rfTrain2 results
-_rfTrain2_ is the model I generated in two steps, with the first step training four random forest models on 20% of the training data, with each model confined to 13 predictor variables from one device location. The second step consisted of training a single random forest model on the entire training set using only variables whose importance was greater than 50 in the first step. Its predicted error rate, estimated from the OOB error rate used to select the best tree, was 0.50%.
+_rfTrain2_ is the model I generated in two steps, with the first step training four random forest models on the 80% training sample, with each model confined to 13 predictor variables from one device location. The second step consisted of training a single random forest model on the entire training set using only variables whose importance was greater than 50 in the first step. Its predicted error rate, estimated from the OOB error rate used to select the best tree, was 0.50%.
 
 ```{r plot2,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
 library(caret)
@@ -183,7 +183,7 @@ plot(varImp2, top = 10, main = "rfTrain2")
 
 ```
 
-That the dumbbells themselves were an important measurement location for differentiating correct performance of biceps curls does not surprise me. What does surprise me is that the belt location was so important. It makes me wonder exactly how classes B, C, D, and E were performed such that belt measurements were helpful at distinguishing them. 
+That the dumbbells themselves were an important measurement location for differentiating correct performance of biceps curls does not surprise me. What did surprise me is that the belt location was so important. It makes me wonder exactly how classes B, C, D, and E were performed such that belt measurements were helpful at distinguishing them. 
 
 ## 6. Error prediction
 The OOB error rate is an unbiased estimate of out of sample error rate, so there is no need for additional cross validation (see <http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr>).
