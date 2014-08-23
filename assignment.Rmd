@@ -1,7 +1,7 @@
 ---
-title: "Predicting Exercise Class from Activity Measurements"
+title: "Predicting Exercise Class from Activity Measurement"
 author: "TMA"
-date: "Tuesday, August 19, 2014"
+date: "Friday, August 22, 2014"
 output:
   html_document:
     highlight: kate
@@ -28,18 +28,18 @@ knit_hooks$set(plot = knitr:::hook_plot_html)
 
 
 ## 1. Summary
-The goal of this task was to predict the manner of exercise performed by participants in the Weight Lifting Exercises (WLE) Dataset <http://groupware.les.inf.puc-rio.br/har>.
+The goal of this task was to predict the manner of exercise performed by participants in the Weight Lifting Exercises (WLE) Dataset <http://groupware.les.inf.puc-rio.br/har>. Predictive data consisted of different measurements obtained from four different wearable devices.
 
 I compared two approaches for modeling predictions, both using the random forest method. In the first approach I trained a single random forest model on all the predictor variables in a single step. 
 
-The second approach took two steps. First I identified the most important variables within four distinct random forest models. Then I built a random forest model on the entire data set using only the variables identified as most important in the four models in the first step.
+In the second approach I took two steps. First I trained four independent random forests, one for each device, to identify each device's most important variables. Then I built a random forest model using only those important variables.
 
 Both approaches resulted in expected accuracy (based on their respective OOB accuracy) that rounds to 1.0. The expected out of sample error rates were 0.57% and 0.50%, respectively.
 
 
 ## 2. Data Processing
 ### The experiment
-The WLE data describe an experiment in which six human participants performed exercises known as _dumbbell biceps curls_. The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes: Class A indicated proper form, while Classes B, C, D, and E indicated improper form, defined in specific ways.
+The WLE data describe an experiment in which six human participants performed exercises known as _dumbbell biceps curls_. The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes: Class A indicated proper form, while Classes B, C, D, and E indicated improper form, defined in different specific ways.
 
 The experimenters measured participants' activity from sensors in four different locations, including on three wearable devices. The locations were on the dumbbells themselves, on a belt worn around the waist, on an arm-band, and on a glove. Each device's metrics included tri-axis measures from an accelerometer, a gyroscope, and a magnetometer.
 
@@ -49,7 +49,7 @@ To read more, visit the WLE website: <http://groupware.les.inf.puc-rio.br/public
 The data consists of a preprocessed training data set including 19,622 observations among 160 variables, and a testing data set including 20 observations. The testing data did not label the "classe" variable, the discovery of which was the purpose of this analysis. 
 
 #### Removing non-predictive variables
-To eliminate variables not derived from wearable device measurements, I subset the training data to include only variables that reflected discrete measures from the wearable devices, leaving 52 possible predictor variables. These possible predictor variables comprised 13 variables for each of the four devices.
+To eliminate variables not derived from wearable device measurements, I subset the training data to include only variables that reflected discrete measures (as opposed to statistical measures, such as variance or skew) from the wearable devices, leaving 52 possible predictor variables. These possible predictor variables comprised 13 variables for each of the four devices.
 
 Then I split the training data 80/20, randomly sampling the outcome variable, "classe."
 
@@ -118,12 +118,12 @@ rfTrain  <- train(classe ~ ., method="rf",data=sampleTrain[,c(3:54,55)],verbose=
 
 ## 3. Modeling
 ### Model 1: _rfTrain_
-I trained a random forest model on 80% of the training set using the default parameters from the caret package.
+I trained a random forest model on the 80% training subset, using the default parameters from the caret package.
 
 ### Model 2: _rfTrain2_
-I also trained four random forest models - _rfBelt_, _rfArm_, _rfDumbbells_, _rfForearm_ - on 80% of the training set, using the default parameters from the caret package. According to their names, I confined each model to variables from its appropriate device location.
+I trained four random forest models - _rfBelt_, _rfArm_, _rfDumbbells_, _rfForearm_ - on the 80% training subset, using the default parameters from the caret package. According to their names, I confined each model to variables from its appropriate device location.
 
-Using only the most important variables identified from each location - defining "important" as greater than 50 - I trained a random forest model on the same training data subset, using the default parameters from the caret package.
+Using only the most important variables identified from each location - defining "important" as greater than 50 - I trained a random forest model on the same 80% training data subset, using the default parameters from the caret package.
 
 ## 4. Results
 ### Important variables
@@ -158,7 +158,7 @@ _rfTrain_ is the model generated in a single step, training a random forest mode
 ```{r plot1,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
 library(caret)
 rfTrain$finalModel
-
+trainError <- round(1.0000 - rfTrain$results$Accuracy[2], 4)
 ```
 
 ### rfTrain2 results
@@ -167,37 +167,28 @@ _rfTrain2_ is the model generated in two steps, with the first step training fou
 ```{r plot2,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
 library(caret)
 rfTrain2$finalModel
-
+train2Error <- round(1.0000 - rfTrain2$results$Accuracy, 4)[1]
 ```
-## 5. Most important locations: belt, dumbbells, forearm
-It is not surprising that measures from the arm location was not among the most important variables in either final model. I do find it surprising that the belt location was so important, which makes me wonder exactly how classes B, C, D, and E were performed that belt measurements were helpful at all. 
+## 5. Most important locations: belt and dumbbells
 
-### Figure 1. Most Important Variables, _rfTrain_
-```{r plot3,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
+### Figure 1. Most Important Variables, _rfTrain_ and _rfTrain2_
+```{r plot3,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=5,fig.height=4}
 library(caret)
+par(mfrow = c(1, 2))
 varImp1 <- varImp(rfTrain)
-plot(varImp1, top = 10)
+plot(varImp1, top = 10, main = "rfTrain ")
+
+varImp2 <- varImp(rfTrain2)
+plot(varImp2, top = 10, main = "rfTrain2")
 
 ```
 
-### Figure 2. Most Important Variables, _rfTrain2_
-```{r plot4,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
-library(caret)
-varImp2 <- varImp(rfTrain)
-plot(varImp2, top = 10)
-
-```
+That the dumbbells themselves were an important measurement location for differentiating correct performance of biceps curls does not surprise me. What does surprise me is that the belt location was so important. It makes me wonder exactly how classes B, C, D, and E were performed such that belt measurements were helpful at distinguishing them. 
 
 ## 6. Error prediction
 The OOB error rate is an unbiased estimate of out of sample error rate, so there is no need for additional cross validation (see <http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr>).
 
 For any graders who insist on additional cross-validation, I also tested both models on the held-out training data. 
-
-The first model's error prediction (based on the OOB error rate) is 0.57%. When tested on the cross-validation sample, the error rate was 0.7643%.
-
-The second model's error prediction (based on the OOB error rate) is 0.50%. When tested on the cross-validation sample, the error rate was 0.6115%.
-
-For either model, the expected likelihood of predicting all 20 test cases correctly on using _rfTrain2_ is approximately 0.995^20, or 0.90. 
 
 ```{r predict1,cache=TRUE,echo=FALSE,dependson=c('rsubset','rfMod', 'rfTest2'),fig.align='center',fig.width=10,fig.height=8}
 library(caret)
@@ -210,14 +201,22 @@ predTrain2 <- predict(rfTrain2, newdata = cvTrain)
 ```{r predict2,cache=TRUE,echo=TRUE,dependson=c('rsubset','rfMod', 'rfTest2', 'predict1'),fig.align='center',fig.width=10,fig.height=8}
 library(caret)
 
+
 cMTrain <- confusionMatrix(predTrain, cvTrain$classe)
 cMTrain
-trainError <- (1 - sum(diag(cMTrain$table))/sum(apply(cMTrain$table, 2, sum)))
-trainError
+cvError <- (1 - sum(diag(cMTrain$table))/sum(apply(cMTrain$table, 2, sum)))
+cvError
 
 cMTrain2 <- confusionMatrix(predTrain2, cvTrain$classe)
 cMTrain2
 
-train2Error <- (1 - sum(diag(cMTrain2$table))/sum(apply(cMTrain2$table, 2, sum)))
-train2Error
+cv2Error <- (1 - sum(diag(cMTrain2$table))/sum(apply(cMTrain2$table, 2, sum)))
+cv2Error
 ```
+
+The first model's error prediction (based on the OOB error rate) is 0.0057. When tested on the cross-validation sample, the error rate was `r cvError`.
+
+The second model's error prediction (based on the OOB error rate) is 0.0050. When tested on the cross-validation sample, the error rate was `r cv2Error`.
+
+For either model, the expected likelihood of predicting all 20 test cases correctly on the first attempt is approximately 0.995^20, or 0.90. 
+
