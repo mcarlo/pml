@@ -96,7 +96,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <div id="table-1-predictive-variables" class="section level5">
 <h5>Table 1: Predictive Variables</h5>
 <!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
-<!-- Fri Aug 22 18:42:28 2014 -->
+<!-- Fri Aug 22 19:09:50 2014 -->
 <TABLE border="1">
 <TR> <TH> 
 Belt
@@ -241,7 +241,7 @@ magnet_forearm_z
 </div>
 <div id="model-2-rftrain2" class="section level3">
 <h3>Model 2: <em>rfTrain2</em></h3>
-<p>I also trained four random forest models on 80% of the training set, using the default parameters from the caret package. I confined each model to a specific device location.</p>
+<p>I also trained four random forest models - <em>rfBelt</em>, <em>rfArm</em>, <em>rfDumbbells</em>, <em>rfForearm</em> - on 80% of the training set, using the default parameters from the caret package. I confined each model to a specific device location, hence their names.</p>
 <p>Combining the most important variables from each location - defining “important” as greater than 50 - I trained a random forest model on the same 80% subset of the training data set used for <em>rfTrain</em> using only the important variables and using the default parameters from the caret package.</p>
 </div>
 </div>
@@ -250,8 +250,8 @@ magnet_forearm_z
 <div id="important-variables" class="section level3">
 <h3>Important variables</h3>
 <p>Among the four mini random forest models, the following variables met the threshold of variable importance greater than 50.</p>
-<div id="table-2.-most-important-variables-from-discrete-location-models" class="section level5">
-<h5>Table 2. Most important variables from discrete location models</h5>
+<div id="table-2.-most-important-variables-from-each-location" class="section level5">
+<h5>Table 2. Most important variables from each location</h5>
 <!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
 <!-- Fri Aug 22 10:00:09 2014 -->
 <TABLE border="1">
@@ -364,7 +364,7 @@ E    0    4    3    6 2867    0.004514</code></pre>
 <div id="error-prediction" class="section level2">
 <h2>6. Error prediction</h2>
 <p>The OOB error rate is an unbiased estimate of out of sample error rate (see <a href="http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr">http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr</a>), so there is no need for additional cross validation.</p>
-<p>The first model’s error prediction (based on the OOB error rate) is 0.57%. When tested on the cross-validation sample, the error rate was 0.7643%.</p>
+<p>For graders who insist on cross-validation, I tested both models on the held-out training data. The first model’s error prediction (based on the OOB error rate) is 0.57%. When tested on the cross-validation sample, the error rate was 0.7643%.</p>
 <p>The second model’s error prediction (based on the OOB error rate) is 0.50%. When tested on the cross-validation sample, the error rate was 0.6115%.</p>
 <p>For either model, the expected likelihood of predicting all 20 test cases correctly on using <em>rfTrain2</em> is approximately 0.995^20, or 0.90.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(caret)
