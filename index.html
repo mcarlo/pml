@@ -75,7 +75,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <p>The goal of this task was to predict the manner of exercise (specifically, biceps curls) performed by participants in the Weight Lifting Exercises (WLE) Dataset <a href="http://groupware.les.inf.puc-rio.br/har">http://groupware.les.inf.puc-rio.br/har</a>. Predictive data consisted of activity measurements obtained from four different wearable devices.</p>
 <p>I compared two approaches for modeling predictions, both using the random forest method. In the first approach I trained a single random forest model on all the predictor variables in a single step.</p>
 <p>In the second approach I took two steps. First I trained four independent random forests, one for each device, to identify each device’s most important variables. Then I built a random forest model using only those important variables.</p>
-<p>Both approaches resulted in expected accuracy (based on their respective OOB accuracy) that rounds to 1.0. The expected out of sample error rates were 0.57% and 0.50%, respectively.</p>
+<p>The approaches resulted in expected accuracy (based on their respective OOB accuracy) that round to 0.99 and 1.00, respectively. The expected out of sample error rates were 0.57% and 0.50%, respectively.</p>
 </div>
 <div id="data-processing" class="section level2">
 <h2>2. Data Processing</h2>
@@ -96,7 +96,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <div id="table-1-predictive-variables" class="section level5">
 <h5>Table 1: Predictive Variables</h5>
 <!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
-<!-- Sat Aug 23 13:10:55 2014 -->
+<!-- Sun Aug 24 09:22:28 2014 -->
 <TABLE border="1">
 <TR> <TH> 
 Belt

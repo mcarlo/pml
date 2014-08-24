@@ -34,7 +34,7 @@ I compared two approaches for modeling predictions, both using the random forest
 
 In the second approach I took two steps. First I trained four independent random forests, one for each device, to identify each device's most important variables. Then I built a random forest model using only those important variables.
 
-Both approaches resulted in expected accuracy (based on their respective OOB accuracy) that rounds to 1.0. The expected out of sample error rates were 0.57% and 0.50%, respectively.
+The approaches resulted in expected accuracy (based on their respective OOB accuracy) that round to 0.99 and 1.00, respectively. The expected out of sample error rates were 0.57% and 0.50%, respectively.
 
 
 ## 2. Data Processing
