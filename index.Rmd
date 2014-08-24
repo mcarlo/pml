@@ -1,7 +1,7 @@
 ---
-title: "Predicting Exercise Class from Activity Measurement"
+title: "Predicting Exercise Quality from Activity Measurement"
 author: "TMA"
-date: "Saturday, August 23, 2014"
+date: "Sunday, August 24, 2014"
 output:
   html_document:
     highlight: kate
@@ -28,7 +28,7 @@ knit_hooks$set(plot = knitr:::hook_plot_html)
 
 
 ## 1. Summary
-The goal of this task was to predict the manner of exercise (specifically, biceps curls) performed by participants in the Weight Lifting Exercises (WLE) Dataset <http://groupware.les.inf.puc-rio.br/har>. Predictive data consisted of activity measurements obtained from four different wearable devices.
+The goal of this task was to predict the quality of exercise (specifically, biceps curls) performed by participants in the Weight Lifting Exercises (WLE) Dataset <http://groupware.les.inf.puc-rio.br/har>. Predictive data consisted of activity measurements obtained from four different wearable devices.
 
 I compared two approaches for modeling predictions, both using the random forest method. In the first approach I trained a single random forest model on all the predictor variables in a single step. 
 
@@ -39,7 +39,7 @@ The approaches resulted in expected accuracy (based on their respective OOB accu
 
 ## 2. Data Processing
 ### The experiment
-The WLE data describe an experiment in which six human participants performed exercises known as _dumbbell biceps curls_. The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different classes: Class A indicated proper form, while Classes B, C, D, and E indicated improper form, defined in different specific ways.
+The WLE data describe an experiment in which six human participants performed exercises known as _dumbbell biceps curls_. The experimenters instructed the participants to perform the exercises either properly or improperly, as indicated by five different qualities indicated with the "classe" variable: Class A indicated proper form, while Classes B, C, D, and E indicated improper form, defined in different specific ways.
 
 The experimenters measured participants' activity from sensors in four different locations, including on three wearable devices. The locations were on the dumbbells themselves, on a belt worn around the waist, on an arm-band, and on a glove. Each device's metrics included tri-axis measures from an accelerometer, a gyroscope, and a magnetometer.
 
