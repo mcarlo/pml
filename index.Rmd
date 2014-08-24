@@ -28,7 +28,7 @@ knit_hooks$set(plot = knitr:::hook_plot_html)
 
 
 ## 1. Summary
-The goal of this task was to predict the quality of exercise (specifically, biceps curls) performed by participants in the Weight Lifting Exercises (WLE) Dataset <http://groupware.les.inf.puc-rio.br/har>. Predictive data consisted of activity measurements obtained from four different wearable devices.
+The goal of this task was to predict the quality of exercise (specifically, biceps curls) performed by participants as documented in the Weight Lifting Exercises (WLE) Dataset <http://groupware.les.inf.puc-rio.br/har>. Predictive data consisted of activity measurements obtained from four different wearable devices.
 
 I compared two approaches for modeling predictions, both using the random forest method. In the first approach I trained a single random forest model on all the predictor variables in a single step. 
 
